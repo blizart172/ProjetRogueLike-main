@@ -5,7 +5,7 @@ from typing import Iterable, Iterator, Optional, TYPE_CHECKING
 import numpy as np  # type: ignore
 from tcod.console import Console
 
-from entity import Actor
+from entity import Actor, Item
 import tile_types
 
 if TYPE_CHECKING:
@@ -42,16 +42,27 @@ class GameMap:
             if isinstance(entity, Actor) and entity.is_alive
         )
 
+    @property
+    def items(self) -> Iterator[Item]:
+        yield from (entity for entity in self.entities if isinstance(entity, Item))
+
     def get_blocking_entity_at_location(
-        self, location_x: int, location_y: int
+        self, location_x: int, location_y: int,
     ) -> Optional[Entity]:
         for entity in self.entities:
             if (
-                entity.blocks_movement 
-                and entity.x == location_x 
+                entity.blocks_movement
+                and entity.x == location_x
                 and entity.y == location_y
             ):
                 return entity
+
+        return None
+
+    def get_actor_at_location(self, x: int, y: int) -> Optional[Actor]:
+        for actor in self.actors:
+            if actor.x == x and actor.y == y:
+                return actor
 
         return None
 
@@ -82,10 +93,3 @@ class GameMap:
                 console.print(
                     x=entity.x, y=entity.y, string=entity.char, fg=entity.color
                 )
-
-    def get_actor_at_location(self, x: int, y: int) -> Optional[Actor]:
-        for actor in self.actors:
-            if actor.x == x and actor.y == y:
-                return actor
-            
-        return None
